@@ -1,0 +1,26 @@
+<div *ngIf="qrCodeLink">
+    <h2 id="title" class="title fw-semibold">Setup Multi Factor Authentication</h2>
+    <p class="fs-5"><strong> Step 1:</strong> Scan this QR code in your Authentication app</p>
+    <div class="w-100 text-center mb-4">
+        <img [src]="qrCodeLink" alt="qrcode">
+    </div>
+    <p class="fs-5 mb-4"><strong> Step 2:</strong> Enter the OTP from your Authentication app</p>
+    <form (ngSubmit)="enableMFA()" [formGroup]="otpForm" aria-labelledby="title">
+        <div class="form-control-group">
+            <!-- <label class="label" for="input-otp">OTP</label> -->
+            <input nbInput fullWidth formControlName="otp" name="otp" type="text" id="input-otp" placeholder="OTP"
+                fieldSize="large" autofocus
+                [status]="otpForm.controls['otp'].dirty ? (otpForm.controls['otp'].invalid  ? 'danger' : 'success') : 'basic'"
+                [attr.aria-invalid]="otpForm.controls['otp'].invalid && otpForm.controls['otp'].touched ? true : null">
+            <ng-container *ngIf="otpForm?.controls?.['otp']?.invalid && otpForm?.controls?.['otp']?.touched">
+                <p class="caption status-danger" *ngIf="otpForm?.controls?.['otp']?.errors?.['required']">
+                    OTP is required!
+                </p>
+            </ng-container>
+        </div>
+
+        <button nbButton fullWidth status="primary" size="large" [disabled]="otpForm.invalid">
+            Enable MFA
+        </button>
+    </form>
+</div>

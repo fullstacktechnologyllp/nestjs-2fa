@@ -1,0 +1,68 @@
+<nb-layout>
+    <nb-layout-header>
+        <div class="w-100 d-flex justify-content-between align-items-center">
+            <span class="heading">MFA Authenticators</span>
+            <button nbButton status="danger" (click)="logout()">Logout</button>
+        </div>
+    </nb-layout-header>
+
+    <nb-layout-column class="colored-column-basic">
+        <nb-card class="p-3 col-lg-6">
+            <nb-card-body class="example-items-col">
+                <h4>Profile Details</h4>
+                <form (ngSubmit)="updateProfile()" [formGroup]="profileForm" aria-labelledby="title">
+                    <div class="form-control-group mt-3">
+                        <span class="fs-5">First Name : </span>
+                        <input nbInput formControlName="firstName" class="ms-lg-3 col-lg-8 col-12 mt-3 mt-lg-0"
+                            name="firstName" id="input-userName" placeholder="First Name" fieldSize="medium"
+                            [status]="profileForm.controls['firstName'].dirty ? (profileForm.controls['firstName'].invalid  ? 'danger' : 'success') : 'basic'"
+                            [attr.aria-invalid]="profileForm.controls['firstName'].invalid && profileForm.controls['firstName'].touched ? true : null">
+                        <ng-container
+                            *ngIf="profileForm?.controls?.['firstName']?.invalid && profileForm?.controls?.['firstName']?.touched">
+                            <p class="caption status-danger fs-6 mt-2"
+                                *ngIf="profileForm?.controls?.['firstName']?.errors?.['required']">
+                                First Name is required!
+                            </p>
+                        </ng-container>
+                    </div>
+                    <div class="form-control-group mt-4">
+                        <span class="fs-5">Last Name : </span>
+                        <input nbInput formControlName="lastName" class="ms-lg-3 mt-3 col-lg-8 col-12 mt-lg-0"
+                            name="lastName" id="input-lastName" placeholder="Last Name" fieldSize="medium"
+                            [status]="profileForm.controls['lastName'].dirty ? (profileForm.controls['lastName'].invalid  ? 'danger' : 'success') : 'basic'"
+                            [attr.aria-invalid]="profileForm.controls['lastName'].invalid && profileForm.controls['lastName'].touched ? true : null">
+                        <ng-container
+                            *ngIf="profileForm?.controls?.['lastName']?.invalid && profileForm?.controls?.['lastName']?.touched">
+                            <p class="caption status-danger fs-6 mt-2"
+                                *ngIf="profileForm?.controls?.['lastName']?.errors?.['required']">
+                                Last Name is required!
+                            </p>
+                        </ng-container>
+                    </div>
+                    <div class="form-control-group mt-4">
+                        <span class="fs-5">Email : </span>
+                        <input nbInput formControlName="email" class="ms-lg-3 mt-3 col-lg-8 col-12 mt-lg-0" name="email"
+                            id="input-email" placeholder="Email" fieldSize="medium">
+                    </div>
+                    <div class="form-control-group mt-3">
+                        <span class="fs-5">Status : </span>
+                        <input nbInput formControlName="status" class="ms-lg-3 col-lg-8 col-12 mt-3 mt-lg-0"
+                            name="status" id="input-status" placeholder="Status" fieldSize="medium"
+                            [status]="profileForm.controls['status'].dirty ? (profileForm.controls['status'].invalid  ? 'danger' : 'success') : 'basic'"
+                            [attr.aria-invalid]="profileForm.controls['status'].invalid && profileForm.controls['status'].touched ? true : null">
+                    </div>
+                    <div class="mt-4 d-flex align-items-center justify-content-start">
+                        <span class="fs-5 me-4">Enable MFA : </span>
+                        <nb-toggle status="primary" formControlName="mfaEnable"></nb-toggle>
+                    </div>
+                    <button nbButton type="submit" class="mt-4 col-sm-4 col-12 d-inline-block" status="primary" size="medium"
+                        [disabled]="profileForm.invalid">
+                        Save Changes
+                    </button>
+                </form>
+                <button nbButton class="px-4" status="info" class="mt-2 col-sm-4 col-12" (click)="resetPassword(this.profileForm.controls['email'].value)">Reset Password</button>
+            </nb-card-body>
+        </nb-card>
+    </nb-layout-column>
+    <nb-layout-footer>Contact us</nb-layout-footer>
+</nb-layout>
