@@ -72,10 +72,10 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](LICENSE).
 
-# Export this variables before running the server
-export DATABASE_HOST='localhost'
-export DATABASE_PORT=3659
-export DATABASE_NAME='users'
-export DATABASE_USERNAME='postgres'
-export DATABASE_PASSWORD='pgpassword'
-export JWT_SECRET_KEY='mfa-jwt-secret-key-for-authenticator'
+# Export this variables before running the server   
+export DATABASE_HOST=host
+export DATABASE_PORT=portnNumber
+export DATABASE_NAME="test"
+export DATABASE_USERNAME=username
+export DATABASE_PASSWORD=password
+export JWT_SECRET_KEY=jwt-key
