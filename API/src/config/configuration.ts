@@ -1,0 +1,8 @@
+export const config = {
+  DATABASE_HOST: process.env.DATABSE_USERNAME,
+  DATABASE_PORT: process.env.DATABASE_PORT,
+  DATABASE_NAME: process.env.DATABASE_NAME,
+  DATABASE_USERNAME: process.env.DATABASE_USERNAME,
+  DATABASE_PASSWORD: process.env.DATABASE_PASSWORD,
+  JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,
+};
