@@ -2,6 +2,7 @@ import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { ApiService } from "src/app/Services/api/api.service";
+import { LoaderService } from "src/app/Services/loader/loader.service";
 import { LocalstorageService } from "src/app/Services/localstorage/localstorage.service";
 import { ToastService } from "src/app/Services/toast/toast.service";
 
@@ -18,7 +19,8 @@ export class SetupMfaComponent implements OnInit {
     private router: Router,
     private apiService: ApiService,
     private toast: ToastService,
-    private localStorageService: LocalstorageService
+    private localStorageService: LocalstorageService,
+    private loader: LoaderService
   ) {
     this.otpForm = this.formBuilder.group({
       otp: ["", [Validators.required]],
@@ -27,36 +29,33 @@ export class SetupMfaComponent implements OnInit {
 
   async ngOnInit() {
     try {
+      // this.loader.start();
       const qrCode = await this.apiService.generateQRCode();
-      if (qrCode.success) {
-        this.qrCodeLink = qrCode.qrCodeLink;
+      this.qrCodeLink = qrCode.qrCodeLink;
+      console.log(qrCode);
+      if (qrCode?.success) {
       }
-    } catch (e: any) {
-      setTimeout(() => {
-        this.toast.error(e.error.message);
-      }, 1000);
+      // this.loader.stop();
+    } catch (error: any) {
+      this.toast.error(error?.error?.message);
     }
   }
 
   async enableMFA() {
     if (this.otpForm.controls["otp"].value) {
       try {
-        const activateMFA: any = await this.apiService.activateMFA({
+        this.loader.start();
+        const activateMFA = await this.apiService.activateMFA({
           otp: this.otpForm.controls["otp"].value,
         });
+        this.loader.stop();
         if (activateMFA?.success) {
           // this.localStorageService.setItem("token", activateMFA.userData.token);
-          setTimeout(() => {
-            this.toast.success(activateMFA.message);
-          }, 500);
-          setTimeout(() => {
-            this.router.navigate(["/profile"]);
-          }, 2000);
+          this.toast.success(activateMFA?.message);
+          this.router.navigate(["/profile"]);
         }
-      } catch (e: any) {
-        setTimeout(() => {
-          this.toast.error(e.error.message);
-        }, 1000);
+      } catch (error: any) {
+        this.toast.error(error?.error?.message);
       }
     }
   }

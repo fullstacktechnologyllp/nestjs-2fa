@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { ApiService } from "src/app/Services/api/api.service";
+import { LoaderService } from "src/app/Services/loader/loader.service";
 import { ToastService } from "src/app/Services/toast/toast.service";
 
 @Component({
@@ -17,7 +18,8 @@ export class ResetPasswordComponent {
     private formBuilder: FormBuilder,
     private apiService: ApiService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private loader: LoaderService
   ) {
     this.resetPasswordForm = this.formBuilder.group({
       oldPassword: ["", [Validators.required]],
@@ -32,14 +34,12 @@ export class ResetPasswordComponent {
         password: this.resetPasswordForm.value.oldPassword,
         newPassword: this.resetPasswordForm.value.newPassword,
       };
+      this.loader.start();
       const resetPassword = await this.apiService.resetPassword(payload);
+      this.loader.stop();
       if (resetPassword?.success) {
-        setTimeout(() => {
-          this.toast.success(resetPassword?.message);
-        }, 500);
-        setTimeout(() => {
-          this.router.navigate(["/profile"]);
-        }, 2000);
+        this.toast.success(resetPassword?.message);
+        this.router.navigate(["/profile"]);
       }
     } catch (error: any) {
       console.error(error?.error?.message);

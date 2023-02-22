@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { ApiService } from "src/app/Services/api/api.service";
+import { LoaderService } from "src/app/Services/loader/loader.service";
 import { ToastService } from "src/app/Services/toast/toast.service";
 
 @Component({
@@ -16,7 +17,8 @@ export class SignupComponent {
     private formBuilder: FormBuilder,
     private apiService: ApiService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private loader: LoaderService
   ) {
     this.signUpForm = this.formBuilder.group({
       firstName: ["", [Validators.required]],
@@ -46,24 +48,19 @@ export class SignupComponent {
           password: this.signUpForm.value.password,
           status: "inactive",
         };
+        this.loader.start();
         const signUpResponse = await this.apiService.signUp(userData);
+        this.loader.stop();
         if (signUpResponse.success) {
-          setTimeout(() => {
-            this.toast.success(signUpResponse.message);
-            this.router.navigate(["/login"]);
-          }, 1000);
-
+          this.toast.success(signUpResponse.message);
+          this.router.navigate(["/login"]);
           return;
         } else {
-          setTimeout(() => {
-            this.toast.error(signUpResponse.message);
-          }, 1000);
+          this.toast.error(signUpResponse.message);
           return;
         }
-      } catch (e: any) {
-        setTimeout(() => {
-          this.toast.error(e.error.message);
-        }, 1000);
+      } catch (error: any) {
+        this.toast.error(error?.error?.message);
       }
     }
   }

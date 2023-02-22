@@ -5,6 +5,7 @@ import { ApiService } from "src/app/Services/api/api.service";
 import { LoaderService } from "src/app/Services/loader/loader.service";
 import { LocalstorageService } from "src/app/Services/localstorage/localstorage.service";
 import { ToastService } from "src/app/Services/toast/toast.service";
+import { User } from "src/app/user.interface";
 
 @Component({
   selector: "app-profile",
@@ -13,6 +14,7 @@ import { ToastService } from "src/app/Services/toast/toast.service";
 })
 export class ProfileComponent implements OnInit {
   profileForm: FormGroup;
+  MfaEnableBefore: boolean;
   constructor(
     private formBuilder: FormBuilder,
     private apiService: ApiService,
@@ -21,20 +23,25 @@ export class ProfileComponent implements OnInit {
     private router: Router,
     private loader: LoaderService
   ) {
+    this.MfaEnableBefore = false;
     this.profileForm = this.formBuilder.group({
       firstName: ["", [Validators.required]],
       lastName: ["", [Validators.required]],
-      email: ["", [Validators.required]],
-      status: [""],
+      email: [{ value: "", disabled: true }, [Validators.required]],
+      status: [{ value: "", disabled: true }],
       mfaEnable: [""],
     });
-    this.profileForm.controls["email"].disable();
-    this.profileForm.controls["status"].disable();
   }
 
   async ngOnInit() {
+    await this.getUserProfile();
+  }
+
+  async getUserProfile() {
     try {
-      const user = await this.apiService.getUserDetails();
+      this.loader.start();
+      const user: User = await this.apiService.getUserDetails();
+      this.MfaEnableBefore = user?.mfaEnable;
       this.profileForm.patchValue({
         firstName: user?.firstName,
         lastName: user?.lastName,
@@ -42,10 +49,9 @@ export class ProfileComponent implements OnInit {
         status: user?.status,
         mfaEnable: user?.mfaEnable,
       });
-    } catch (e: any) {
-      setTimeout(() => {
-        this.toast.error(e.error.message);
-      }, 1000);
+      this.loader.stop();
+    } catch (error: any) {
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -64,17 +70,31 @@ export class ProfileComponent implements OnInit {
 
   async updateProfile() {
     try {
+      console.log(this.MfaEnableBefore);
+      console.log(this.profileForm.value);
       const payload = {
         firstName: this.profileForm.value.firstName,
         lastName: this.profileForm.value.lastName,
-        mfaEnable: this.profileForm.value.mfaEnable,
+        ...(this.MfaEnableBefore &&
+          !this.profileForm.value.mfaEnable && { mfaEnable: false }),
+        ...(!this.MfaEnableBefore &&
+          this.profileForm.value.mfaEnable && {
+            mfaSecter: "",
+            mfaEnable: false,
+          }),
       };
       console.log(payload);
+      console.log(this.profileForm.getRawValue().email);
+      this.loader.start();
       const updateUser = await this.apiService.updateProfile(payload);
+      this.loader.stop();
       if (updateUser?.success) {
-        setTimeout(() => {
-          this.toast.success(updateUser?.message);
-        }, 1000);
+        if (!this.MfaEnableBefore && this.profileForm.value.mfaEnable) {
+          this.router.navigate(["/auth/setup-mfa"]);
+          return;
+        }
+        await this.getUserProfile();
+        this.toast.success(updateUser?.message);
       }
     } catch (error: any) {
       console.error(error?.error?.message);

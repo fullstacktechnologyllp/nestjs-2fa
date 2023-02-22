@@ -1,5 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { User } from "src/app/user.interface";
 import { ToastService } from "../toast/toast.service";
 
 @Injectable({
@@ -16,9 +17,7 @@ export class ApiService {
         .toPromise();
       return signUpResponse;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -29,9 +28,7 @@ export class ApiService {
         .toPromise();
       return loginResponse;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -42,9 +39,7 @@ export class ApiService {
         .toPromise();
       return forgotPaswordResponse;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -55,9 +50,7 @@ export class ApiService {
         .toPromise();
       return forgotPaswordResponse;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -68,9 +61,7 @@ export class ApiService {
         .toPromise();
       return resetPasswordResponse;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -81,9 +72,7 @@ export class ApiService {
         .toPromise();
       return userDetails;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -94,9 +83,7 @@ export class ApiService {
         .toPromise();
       return updateUser;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -107,9 +94,7 @@ export class ApiService {
         .toPromise();
       return qrCode;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -120,10 +105,7 @@ export class ApiService {
         .toPromise();
       return mfaResponse;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
-      // console.error(error?.error?.message);
+      this.toast.error(error?.error?.message);
     }
   }
 
@@ -134,9 +116,7 @@ export class ApiService {
         .toPromise();
       return verificationResponse;
     } catch (error: any) {
-      setTimeout(() => {
-        this.toast.error(error?.error?.message);
-      }, 1000);
+      this.toast.error(error?.error?.message);
     }
   }
 }

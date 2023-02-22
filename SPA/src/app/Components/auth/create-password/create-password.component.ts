@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { ApiService } from "src/app/Services/api/api.service";
+import { LoaderService } from "src/app/Services/loader/loader.service";
 import { ToastService } from "src/app/Services/toast/toast.service";
 
 @Component({
@@ -17,7 +18,8 @@ export class CreatePasswordComponent {
     private formBuilder: FormBuilder,
     private apiService: ApiService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private loader: LoaderService
   ) {
     this.createPasswordForm = this.formBuilder.group({
       newPassword: ["", [Validators.required]],
@@ -32,20 +34,15 @@ export class CreatePasswordComponent {
           email: this.currentEmail,
           newPassword: this.createPasswordForm.value.newPassword,
         };
+        this.loader.start();
         const createPassword = await this.apiService.createPassword(payload);
+        this.loader.stop();
         if (createPassword.success) {
-          setTimeout(() => {
-            this.toast.success(createPassword.message);
-          }, 500);
-          setTimeout(() => {
-            // this.toast.info("Please login with your new creadentials!!");
-            this.router.navigate(["/auth/login"]);
-          }, 2000);
+          this.toast.success(createPassword.message);
+          this.router.navigate(["/auth/login"]);
         }
       } catch (error: any) {
-        setTimeout(() => {
-          this.toast.error(error?.error?.message);
-        }, 1000);
+        this.toast.error(error?.error?.message);
       }
     }
   }

@@ -14,8 +14,8 @@ import {
 import { NbEvaIconsModule } from "@nebular/eva-icons";
 import { HttpClientModule, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { NbPasswordAuthStrategy, NbAuthModule } from "@nebular/auth";
-import { NgxUiLoaderHttpModule, NgxUiLoaderModule } from "ngx-ui-loader";
 import { TokenInterceptor } from "./Components/auth/token.interceptor";
+import { NgxSpinnerModule } from "ngx-spinner";
 
 @NgModule({
   declarations: [AppComponent],
@@ -36,13 +36,10 @@ import { TokenInterceptor } from "./Components/auth/token.interceptor";
       forms: {},
     }),
     NbToastrModule.forRoot(),
-    NgxUiLoaderModule,
-    NgxUiLoaderHttpModule.forRoot({
-      showForeground: true,
-    }),
     NbButtonModule,
     NbMenuModule.forRoot(),
     NbEvaIconsModule,
+    NgxSpinnerModule,
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },

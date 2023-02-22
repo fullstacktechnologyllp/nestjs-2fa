@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Router } from "@angular/router";
 import { ApiService } from "src/app/Services/api/api.service";
+import { LoaderService } from "src/app/Services/loader/loader.service";
 import { ToastService } from "src/app/Services/toast/toast.service";
 
 @Component({
@@ -17,7 +18,8 @@ export class MfaVerificationComponent {
     private formBuilder: FormBuilder,
     private apiService: ApiService,
     private router: Router,
-    private toast: ToastService
+    private toast: ToastService,
+    private loader: LoaderService
   ) {
     this.otpForm = this.formBuilder.group({
       otp: ["", [Validators.required]],
@@ -27,24 +29,20 @@ export class MfaVerificationComponent {
   async mfaVerification() {
     if (this.otpForm.controls["otp"].value) {
       try {
-        const otpVerification: any = await this.apiService.otpVerification({
+        this.loader.start();
+        const otpVerification = await this.apiService.otpVerification({
           otp: this.otpForm.controls["otp"].value,
           email: history?.state?.email,
         });
+        this.loader.stop();
         if (otpVerification?.success) {
-          setTimeout(() => {
-            this.toast.success(otpVerification.message);
-          }, 500);
-          setTimeout(() => {
-            this.router.navigate([history?.state?.redirection], {
-              state: { email: history?.state?.email },
-            });
-          }, 2000);
+          this.toast.success(otpVerification?.message);
+          this.router.navigate([history?.state?.redirection], {
+            state: { email: history?.state?.email },
+          });
         }
-      } catch (e: any) {
-        setTimeout(() => {
-          this.toast.error(e.error.message);
-        }, 1000);
+      } catch (error: any) {
+        this.toast.error(error?.error?.message);
       }
     }
   }
