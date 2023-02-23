@@ -1,122 +1,61 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { User } from "src/app/user.interface";
-import { ToastService } from "../toast/toast.service";
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import {
+    ForgotPasswordResponse,
+    LoginFormData,
+    LoginResponseData,
+    Message,
+    QRCodeResponse,
+    SignUpFormData,
+    SignUpResponseData,
+    User,
+} from 'src/app/user.interface';
+import { ToastService } from '../toast/toast.service';
 
 @Injectable({
-  providedIn: "root",
+    providedIn: 'root',
 })
 export class ApiService {
-  baseUrl = "http://localhost:3000";
-  constructor(private http: HttpClient, private toast: ToastService) {}
+    baseUrl = 'http://localhost:3000';
+    constructor(private http: HttpClient, private toast: ToastService) {}
 
-  async signUp(userData: object) {
-    try {
-      const signUpResponse: any = await this.http
-        .post(`${this.baseUrl}/auth/signup`, userData)
-        .toPromise();
-      return signUpResponse;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    signUp(payload: SignUpFormData) {
+        return this.http.post<SignUpResponseData>(`${this.baseUrl}/auth/signup`, payload);
     }
-  }
 
-  async login(loginData: object) {
-    try {
-      const loginResponse: any = await this.http
-        .post(`${this.baseUrl}/auth/login`, loginData)
-        .toPromise();
-      return loginResponse;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    login(payload: LoginFormData) {
+        return this.http.post<LoginResponseData>(`${this.baseUrl}/auth/login`, payload);
     }
-  }
 
-  async forgotPassword(data: object) {
-    try {
-      const forgotPaswordResponse: any = await this.http
-        .post(`${this.baseUrl}/auth/forgot-password`, data)
-        .toPromise();
-      return forgotPaswordResponse;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    forgotPassword(payload: { email: string }) {
+        return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/auth/forgot-password`, payload);
     }
-  }
 
-  async createPassword(data: object) {
-    try {
-      const forgotPaswordResponse: any = await this.http
-        .post(`${this.baseUrl}/auth/create-password`, data)
-        .toPromise();
-      return forgotPaswordResponse;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    createPassword(payload: { email: string; newPassword: string }) {
+        return this.http.post<Message>(`${this.baseUrl}/auth/create-password`, payload);
     }
-  }
 
-  async resetPassword(data: object) {
-    try {
-      const resetPasswordResponse: any = await this.http
-        .post(`${this.baseUrl}/auth/reset-password`, data)
-        .toPromise();
-      return resetPasswordResponse;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    resetPassword(payload: { password: string; newPassword: string }) {
+        return this.http.post<Message>(`${this.baseUrl}/auth/reset-password`, payload);
     }
-  }
 
-  async getUserDetails() {
-    try {
-      const userDetails: any = await this.http
-        .get(`${this.baseUrl}/user`)
-        .toPromise();
-      return userDetails;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    getUserDetails() {
+        return this.http.get<User>(`${this.baseUrl}/user`);
     }
-  }
 
-  async updateProfile(payload: object) {
-    try {
-      const updateUser: any = await this.http
-        .patch(`${this.baseUrl}/user`, payload)
-        .toPromise();
-      return updateUser;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    updateProfile(payload: object) {
+        return this.http.patch<Message>(`${this.baseUrl}/user`, payload);
     }
-  }
 
-  async generateQRCode() {
-    try {
-      const qrCode: any = await this.http
-        .get(`${this.baseUrl}/auth/generate-qrcode`)
-        .toPromise();
-      return qrCode;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    generateQRCode() {
+        return this.http.get<QRCodeResponse>(`${this.baseUrl}/auth/generate-qrcode`);
     }
-  }
 
-  async activateMFA(otp: object) {
-    try {
-      const mfaResponse: any = await this.http
-        .post(`${this.baseUrl}/auth/activate-mfa`, otp)
-        .toPromise();
-      return mfaResponse;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    activateMFA(payload: { otp: string }) {
+        return this.http.post<LoginResponseData>(`${this.baseUrl}/auth/activate-mfa`, payload);
     }
-  }
 
-  async otpVerification(otp: object) {
-    try {
-      const verificationResponse: any = await this.http
-        .post(`${this.baseUrl}/auth/mfa`, otp)
-        .toPromise();
-      return verificationResponse;
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
+    otpVerification(payload: { otp: string; email: string }) {
+        return this.http.post<Message>(`${this.baseUrl}/auth/mfa`, payload);
     }
-  }
 }

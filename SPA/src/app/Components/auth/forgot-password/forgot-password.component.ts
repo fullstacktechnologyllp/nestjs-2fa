@@ -1,58 +1,59 @@
-import { Component } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { Router } from "@angular/router";
-import { ApiService } from "src/app/Services/api/api.service";
-import { LoaderService } from "src/app/Services/loader/loader.service";
-import { ToastService } from "src/app/Services/toast/toast.service";
+import { Component, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { ApiService } from 'src/app/Services/api/api.service';
+import { LoaderService } from 'src/app/Services/loader/loader.service';
+import { ToastService } from 'src/app/Services/toast/toast.service';
 
 @Component({
-  selector: "app-forgot-password",
-  templateUrl: "./forgot-password.component.html",
-  styleUrls: ["./forgot-password.component.scss"],
+    selector: 'app-forgot-password',
+    templateUrl: './forgot-password.component.html',
+    styleUrls: ['./forgot-password.component.scss'],
 })
-export class ForgotPasswordComponent {
-  emailForm: FormGroup;
+export class ForgotPasswordComponent implements OnDestroy {
+    emailForm: FormGroup;
+    forgotPasswordSubscription: Subscription | undefined;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private apiService: ApiService,
-    private toast: ToastService,
-    private router: Router,
-    private loader: LoaderService
-  ) {
-    this.emailForm = this.formBuilder.group({
-      email: [
-        "",
-        [
-          Validators.required,
-          Validators.pattern("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$"),
-        ],
-      ],
-    });
-  }
-
-  async forgotPassword() {
-    try {
-      this.loader.start();
-      const forgotPaswordResponse = await this.apiService.forgotPassword(
-        this.emailForm.value
-      );
-      this.loader.stop();
-      if (forgotPaswordResponse?.success) {
-        this.toast.success("Please authenticate for Reset Password");
-        this.router.navigate(["/auth/mfa-verification"], {
-          state: {
-            email: this.emailForm.value.email,
-            redirection: "/auth/create-password",
-          },
+    constructor(
+        private formBuilder: FormBuilder,
+        private apiService: ApiService,
+        private toast: ToastService,
+        private router: Router,
+        private loader: LoaderService,
+    ) {
+        this.emailForm = this.formBuilder.group({
+            email: ['', [Validators.required, Validators.pattern('^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')]],
         });
-        return;
-      }
-      if (forgotPaswordResponse?.message && !forgotPaswordResponse?.success) {
-        this.toast.error(forgotPaswordResponse?.message);
-      }
-    } catch (error: any) {
-      this.toast.error(error?.error?.message);
     }
-  }
+
+    forgotPassword() {
+        this.loader.start();
+        this.forgotPasswordSubscription = this.apiService.forgotPassword(this.emailForm.value)?.subscribe(
+            (forgotPasswordResponse) => {
+                this.loader.stop();
+                if (forgotPasswordResponse?.success) {
+                    this.toast.success('Please authenticate for Reset Password');
+                    this.router.navigate(['/auth/mfa-verification'], {
+                        state: {
+                            email: this.emailForm.value.email,
+                            redirection: '/auth/create-password',
+                        },
+                    });
+                    return;
+                }
+                if (forgotPasswordResponse?.message && !forgotPasswordResponse?.success) {
+                    this.toast.error(forgotPasswordResponse?.message);
+                }
+            },
+            (error) => {
+                this.loader.stop();
+                this.toast.error(error?.error?.message);
+            },
+        );
+    }
+
+    ngOnDestroy(): void {
+        this.forgotPasswordSubscription?.unsubscribe();
+    }
 }
