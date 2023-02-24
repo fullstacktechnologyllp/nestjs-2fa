@@ -45,8 +45,9 @@ export class LoginComponent implements OnDestroy {
                             },
                         });
                         return;
+                    } else {
+                        this.router.navigate(['/auth/setup-mfa']);
                     }
-                    this.router.navigate(['/auth/setup-mfa']);
                 }
             },
             (error) => {

@@ -4,12 +4,14 @@ import { authenticator } from 'otplib';
 import { User } from '../users/users.model';
 import { UsersService } from '../users/users.service';
 import { toDataURL } from 'qrcode';
+import { MailService } from 'src/services/mail.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
+    private mailService: MailService,
   ) {}
 
   /**

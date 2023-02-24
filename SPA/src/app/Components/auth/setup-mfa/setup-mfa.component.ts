@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -23,6 +23,7 @@ export class SetupMfaComponent implements OnInit, OnDestroy {
         private apiService: ApiService,
         private toast: ToastService,
         private loader: LoaderService,
+        private changeDetectorRef: ChangeDetectorRef,
     ) {
         this.otpForm = this.formBuilder.group({
             otp: ['', [Validators.required]],
@@ -31,41 +32,17 @@ export class SetupMfaComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.loader.start();
-        // this.qrCodeSubscription = this.apiService
-        //     .generateQRCode()
-        //     .pipe(
-        //         tap((result) => {
-        //             console.log(result);
-        //             this.qrCodeLink = result?.qrCodeLink;
-        //             console.log(this.qrCodeLink);
-        //             this.loader.stop();
-        //         }),
-        //     )
-        //     .subscribe();
-        this.qrCodeSubscription = this.apiService.generateQRCode().subscribe(
-            {
-                next: (qrCodeResponse) => {
-                    console.log(qrCodeResponse);
-                    this.qrCodeLink = qrCodeResponse?.qrCodeLink;
-                    console.log(this.qrCodeLink);
-                    this.loader.stop();
-                },
-                error: (error) => {
-                    this.loader.stop();
-                    this.toast.error(error?.error?.message);
-                },
+        this.qrCodeSubscription = this.apiService.generateQRCode().subscribe({
+            next: (qrCodeResponse) => {
+                this.qrCodeLink = qrCodeResponse?.qrCodeLink;
+                this.changeDetectorRef.detectChanges();
+                this.loader.stop();
             },
-            // (qrCodeResponse) => {
-            //     console.log(qrCodeResponse);
-            //     this.qrCodeLink = qrCodeResponse?.qrCodeLink;
-            //     console.log(this.qrCodeLink);
-            //     this.loader.stop();
-            // },
-            // (error) => {
-            //     this.loader.stop();
-            //     this.toast.error(error?.error?.message);
-            // },
-        );
+            error: (error) => {
+                this.loader.stop();
+                this.toast.error(error?.error?.message);
+            },
+        });
     }
 
     enableMFA() {
