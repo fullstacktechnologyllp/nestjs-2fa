@@ -10,15 +10,15 @@ import { config } from 'src/config/configuration';
 import { MailService } from 'src/services/mail.service';
 
 @Module({
-  imports: [
-    UsersModule,
-    PassportModule,
-    JwtModule.register({
-      secret: config.JWT_SECRET_KEY,
-      signOptions: { expiresIn: '1d' },
-    }),
-  ],
-  providers: [AuthService, JwtStrategy, Jwt2faStrategy, MailService],
-  controllers: [AuthController],
+    imports: [
+        UsersModule,
+        PassportModule,
+        JwtModule.register({
+            secret: config.JWT_SECRET_KEY,
+            signOptions: { expiresIn: '1d' },
+        }),
+    ],
+    providers: [AuthService, JwtStrategy, Jwt2faStrategy, MailService],
+    controllers: [AuthController],
 })
 export class AuthModule {}
