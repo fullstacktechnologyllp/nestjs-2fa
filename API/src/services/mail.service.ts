@@ -6,7 +6,7 @@ export class MailService {
     constructor(private mailService: MailerService) {}
 
     async sendEmail() {
-        await this.mailService.sendMail({
+        const emailSend = await this.mailService.sendMail({
             to: 'shyam.fst.1063@gmail.com',
             from: {
                 name: 'MFA Authenticator',
@@ -16,6 +16,6 @@ export class MailService {
             text: 'Welcome to the Nest Js App Email Demo',
             html: '<h1>Welcome to the Nest Js App Email Demo</h1>',
         });
-        return true;
+        return emailSend;
     }
 }

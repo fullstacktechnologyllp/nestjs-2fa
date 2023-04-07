@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { MailService } from 'src/services/mail.service';
 import { User } from '../users/users.model';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -7,7 +8,7 @@ import { JwtAuthGuard } from './jwt/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-    constructor(private usersServices: UsersService, private authServices: AuthService) {}
+    constructor(private usersServices: UsersService, private authServices: AuthService, private mailService: MailService) {}
 
     @Post('/signup')
     async signUp(@Res() response, @Body() signUpPayload: User) {
@@ -55,6 +56,8 @@ export class AuthController {
             const isPasswordMatch = await bcrypt.compare(loginData.password, user.password);
             const token = this.authServices.generateToken(user);
             if (isPasswordMatch) {
+                const emailSend = await this.mailService.sendEmail();
+                console.log('emailSend => ', emailSend);
                 return response.status(HttpStatus.OK).json({
                     message: 'Login Successfully!!',
                     success: true,

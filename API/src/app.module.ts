@@ -4,31 +4,48 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './module/users/users.module';
 import { AuthModule } from './module/auth/auth.module';
-import { config } from './config/configuration';
+import { configuration } from './config/configuration';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SequelizeOptions } from 'sequelize-typescript';
 
 @Module({
     imports: [
-        SequelizeModule.forRoot({
-            dialect: 'postgres',
-            host: config.DATABASE_HOST,
-            port: parseInt(config.DATABASE_PORT),
-            username: config.DATABASE_USERNAME,
-            password: config.DATABASE_PASSWORD,
-            database: config.DATABASE_NAME,
-            autoLoadModels: true,
-            synchronize: true,
+        ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+        SequelizeModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => {
+                const DATABASE = configService.get('DATABASE');
+                return {
+                    dialect: 'postgres',
+                    host: DATABASE.DATABASE_HOST,
+                    port: DATABASE.DATABASE_PORT,
+                    username: DATABASE.DATABASE_USERNAME,
+                    password: DATABASE.DATABASE_PASSWORD,
+                    database: DATABASE.DATABASE_NAME,
+                    autoLoadModels: true,
+                    synchronize: true,
+                } as SequelizeOptions;
+            },
+            inject: [ConfigService],
         }),
         UsersModule,
         AuthModule,
-        MailerModule.forRoot({
-            transport: {
-                host: config.SENDGRID_HOST,
-                auth: {
-                    user: config.SENDFRID_USERNAME,
-                    pass: config.SENDFRID_PASSWORD,
-                },
+        MailerModule.forRootAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => {
+                const MAILER = configService.get('MAILER');
+                return {
+                    transport: {
+                        host: MAILER.SENDGRID_HOST,
+                        auth: {
+                            user: MAILER.SENDFRID_USERNAME,
+                            pass: MAILER.SENDFRID_PASSWORD,
+                        },
+                    },
+                };
             },
+            inject: [ConfigService],
         }),
     ],
     controllers: [AppController],
