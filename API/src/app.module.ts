@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersModule } from './module/users/users.module';
+import { UsersModule } from './module/user/user.module';
 import { AuthModule } from './module/auth/auth.module';
 import { configuration } from './config/configuration';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeOptions } from 'sequelize-typescript';
+import { OtpModule } from './module/otp/otp.module';
 
 @Module({
     imports: [
@@ -47,6 +48,7 @@ import { SequelizeOptions } from 'sequelize-typescript';
             },
             inject: [ConfigService],
         }),
+        OtpModule,
     ],
     controllers: [AppController],
     providers: [AppService],

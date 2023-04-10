@@ -39,10 +39,12 @@ export class CreatePasswordComponent implements OnDestroy {
             this.createPasswordSubscription = this.apiService.createPassword(payload)?.subscribe(
                 (createPasswordResponse) => {
                     this.loader.stop();
-                    if (createPasswordResponse.success) {
+                    if (createPasswordResponse?.success) {
                         this.toast.success(createPasswordResponse.message);
                         this.router.navigate(['/auth/login']);
+                        return;
                     }
+                    this.toast.error(createPasswordResponse?.message);
                 },
                 (error) => {
                     this.loader.stop();

@@ -96,7 +96,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     }
                     this.getUserProfile();
                     this.toast.success(updateUserRespone?.message);
+                    return;
                 }
+                this.toast.error(updateUserRespone?.message);
             },
             (error) => {
                 this.loader.stop();

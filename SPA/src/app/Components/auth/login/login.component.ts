@@ -48,7 +48,9 @@ export class LoginComponent implements OnDestroy {
                     } else {
                         this.router.navigate(['/auth/setup-mfa']);
                     }
+                    return;
                 }
+                this.toast.error(loginResponse?.message);
             },
             (error) => {
                 this.loader.stop();

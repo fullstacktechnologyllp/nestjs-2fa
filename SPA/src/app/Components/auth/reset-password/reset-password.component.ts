@@ -42,6 +42,9 @@ export class ResetPasswordComponent implements OnDestroy {
                 if (resetPasswordResponse?.success) {
                     this.toast.success(resetPasswordResponse?.message);
                     this.router.navigate(['/profile']);
+                    return;
+                } else {
+                    this.toast.error(resetPasswordResponse?.message);
                 }
             },
             (error) => {

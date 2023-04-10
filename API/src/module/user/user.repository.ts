@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { User } from './users.model';
+import { User } from './user.model';
 
 @Injectable()
-export class UsersService {
+export class UserRepository {
     constructor(
         @InjectModel(User)
         private usersModel: typeof User,
@@ -61,25 +61,5 @@ export class UsersService {
      */
     async signUp(user: User | any): Promise<User> {
         return this.usersModel.create(user);
-    }
-
-    /**
-     * for Updating secret of any user
-     * @returns number of affected rows
-     */
-    async setTwoFactorAuthenticationSecret(secret: string, userId: number) {
-        const updatedUser = { mfaSecret: secret };
-        const isUpdated = this.updateUser(updatedUser, userId);
-        return isUpdated;
-    }
-
-    /**
-     * for enable 2FA for any user
-     * @returns number of affected rows
-     */
-    async turnOnTwoFactorAuthentication(userId: number) {
-        const updatedUser = { mfaEnable: true };
-        const isUpdated = this.updateUser(updatedUser, userId);
-        return isUpdated;
     }
 }

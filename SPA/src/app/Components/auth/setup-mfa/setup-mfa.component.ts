@@ -54,7 +54,9 @@ export class SetupMfaComponent implements OnInit, OnDestroy {
                     // this.localStorageService.setItem("token", activateMFA.userData.token);
                     this.toast.success(activateMFAResponse?.message);
                     this.router.navigate(['/profile']);
+                    return;
                 }
+                this.toast.error(activateMFAResponse?.message);
             },
             (error) => {
                 this.loader.stop();

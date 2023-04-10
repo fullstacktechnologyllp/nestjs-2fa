@@ -43,7 +43,9 @@ export class MfaVerificationComponent implements OnDestroy {
                         this.router.navigate([history?.state?.redirection], {
                             state: { email: history?.state?.email },
                         });
+                        return;
                     }
+                    this.toast.error(otpVerification?.message);
                 },
                 (error) => {
                     this.loader.stop();

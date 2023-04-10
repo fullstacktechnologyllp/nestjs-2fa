@@ -1,14 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { authenticator } from 'otplib';
-import { User } from '../users/users.model';
-import { UsersService } from '../users/users.service';
+import { User } from '../user/user.model';
 import { toDataURL } from 'qrcode';
 import { MailService } from 'src/services/mail.service';
+import { UserService } from '../user/user.service';
+import {
+    EMAIL_ALREADY_EXISTS,
+    ENABLE_MFA_FOR_PASSWORD,
+    INVALID_CREDENTIALS,
+    LOGIN_SUCCESSFULLY,
+    OTP_VERIFY_SUCCESSFULLY,
+    PASSWORD_UPDATED_SUCCESSFULLY,
+    QR_CODE_GENERATED_SUCCESSFULLY,
+    USER_CREATED_SUCCESSFULLY,
+    USER_FOUND_FOR_EMAIL,
+    USER_NOT_FOUND_FOR_EMAIL,
+    WRONG_OLD_PASSWORD,
+    WRONG_OR_EXPIRED_OTP,
+} from 'src/constants/constant';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService, private usersService: UsersService, private mailService: MailService) {}
+    constructor(private jwtService: JwtService, private userService: UserService, private mailService: MailService) {}
 
     /**
      * for creating new token from user details
@@ -20,6 +35,175 @@ export class AuthService {
                 id: user.id,
                 email: user.email,
             }),
+        };
+    }
+
+    /**
+     * For Sign up in the App
+     * @param signUpPayload
+     * @returns created user details
+     */
+    async signUp(signUpPayload: User) {
+        const { isValidate, message } = this.signUpValidation(signUpPayload);
+        if (isValidate) {
+            const user: User = await this.userService.findUserByEmail(signUpPayload.email);
+            if (user) {
+                return {
+                    message: EMAIL_ALREADY_EXISTS,
+                    success: false,
+                };
+            }
+            const hashedPassword = await bcrypt.hash(signUpPayload.password, 10);
+            const userDetails = {
+                firstName: signUpPayload.firstName,
+                lastName: signUpPayload.lastName,
+                email: signUpPayload.email,
+                password: hashedPassword,
+                mfaSecret: '',
+                mfaEnable: false,
+                status: signUpPayload.status,
+            };
+            const newUser = await this.userService.signUp(userDetails);
+            return {
+                message: USER_CREATED_SUCCESSFULLY,
+                success: true,
+                data: {
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName,
+                    email: newUser.email,
+                    status: newUser.status,
+                },
+            };
+        }
+        return {
+            message: message,
+            success: false,
+        };
+    }
+
+    /**
+     * For login into the App using emaila and password
+     * @param loginPayload
+     * @returns success or error message
+     */
+    async login(loginPayload) {
+        const user: User = await this.userService.findUserByEmail(loginPayload.email);
+        if (user) {
+            const isPasswordMatch = await bcrypt.compare(loginPayload.password, user.password);
+            const token = this.generateToken(user);
+            if (isPasswordMatch) {
+                // const emailSend = await this.mailService.sendEmail();
+                // console.log('emailSend => ', emailSend);
+                return {
+                    message: LOGIN_SUCCESSFULLY,
+                    success: true,
+                    userData: {
+                        id: user.id,
+                        email: user.email,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        token: token.access_token,
+                        status: user.status,
+                        mfaEnable: user.mfaEnable,
+                    },
+                };
+            }
+            return {
+                message: INVALID_CREDENTIALS,
+                success: false,
+            };
+        }
+        return {
+            message: INVALID_CREDENTIALS,
+            success: false,
+        };
+    }
+
+    /**
+     * For forgot password recovery from email
+     * @param payload
+     * @returns
+     */
+    async forgotPassword(payload) {
+        const user: User = await this.userService.findUserByEmail(payload.email);
+        if (user) {
+            if (user?.mfaEnable) {
+                return {
+                    message: USER_FOUND_FOR_EMAIL,
+                    success: true,
+                    userData: {
+                        mfaEnable: user.mfaEnable,
+                    },
+                };
+            }
+            return {
+                message: ENABLE_MFA_FOR_PASSWORD,
+                success: false,
+            };
+        }
+        return {
+            message: USER_NOT_FOUND_FOR_EMAIL,
+            success: false,
+        };
+    }
+
+    /**
+     * for Generating new password after authentication for forgot password user
+     * @param payload
+     * @returns
+     */
+    async createPassword(payload) {
+        const user: User = await this.userService.findUserByEmail(payload.email);
+        if (user) {
+            const hashedPassword = await bcrypt.hash(payload.newPassword, 10);
+            const updateUser = {
+                password: hashedPassword,
+            };
+            const isUpdate = this.userService.updateUser(updateUser, user.id);
+            if (isUpdate) {
+                return {
+                    message: PASSWORD_UPDATED_SUCCESSFULLY,
+                    success: true,
+                };
+            }
+        }
+        return {
+            message: USER_NOT_FOUND_FOR_EMAIL,
+            success: false,
+        };
+    }
+
+    /**
+     * For Reset password of User using old password
+     * @param userId
+     * @param payload
+     * @returns
+     */
+    async resetPassword(userId, payload) {
+        const user: any = await this.userService.findUserByID(userId);
+        if (user) {
+            const isPasswordMatch = await bcrypt.compare(payload.password, user.password);
+            if (isPasswordMatch) {
+                const newHashedPassword = await bcrypt.hash(payload.newPassword, 10);
+                const updateUser = {
+                    password: newHashedPassword,
+                };
+                const isUpdate = this.userService.updateUser(updateUser, userId);
+                if (isUpdate) {
+                    return {
+                        message: PASSWORD_UPDATED_SUCCESSFULLY,
+                        success: true,
+                    };
+                }
+            }
+            return {
+                message: WRONG_OLD_PASSWORD,
+                success: false,
+            };
+        }
+        return {
+            message: USER_NOT_FOUND_FOR_EMAIL,
+            success: false,
         };
     }
 
@@ -46,7 +230,7 @@ export class AuthService {
 
         const otpAuthUrl = authenticator.keyuri(user.email, 'MFA-Authenticator', secret);
 
-        const isEnable = await this.usersService.setTwoFactorAuthenticationSecret(secret, user.id);
+        const isEnable = await this.userService.setTwoFactorAuthenticationSecret(secret, user.id);
         if (isEnable) {
             return { secret, otpAuthUrl };
         }
@@ -56,8 +240,74 @@ export class AuthService {
      * for generating QR Code Url for the OTP
      * @returns authUrl for OTP
      */
-    async generateQrCodeDataURL(otpAuthUrl: string) {
-        return toDataURL(otpAuthUrl);
+    async generateQrCodeDataURL(user) {
+        const { otpAuthUrl } = await this.generateMFASecret(user);
+        const qrCodeLink = await toDataURL(otpAuthUrl);
+        return {
+            message: QR_CODE_GENERATED_SUCCESSFULLY,
+            success: true,
+            qrCodeLink: qrCodeLink,
+        };
+    }
+
+    /**
+     * For Activate 2FA of User by adding Secret value into user DB
+     * @param requestUser
+     * @param payload
+     * @returns
+     */
+    async activateMFA(requestUser, payload) {
+        const user: any = await this.userService.findUserByID(requestUser.id);
+        if (user) {
+            const isCodeValid = this.isMFACodeValid(payload.otp, user);
+            if (isCodeValid) {
+                const isTurnOn = await this.userService.turnOnTwoFactorAuthentication(user.id);
+                if (isTurnOn) {
+                    const token = this.generateToken(user);
+                    return {
+                        message: 'Multi Factor Authentication has been enabled!!',
+                        success: true,
+                        userData: {
+                            email: user.email,
+                            token: token.access_token,
+                            firstName: user.firstName,
+                            lastName: user.lastName,
+                            status: user.status,
+                        },
+                    };
+                }
+            }
+            return {
+                message: WRONG_OR_EXPIRED_OTP,
+                success: false,
+            };
+        }
+    }
+
+    /**
+     * For Authenticate 2FA code from App which user submit for authenticate
+     * @param payload
+     * @returns
+     */
+    async authenticate(payload) {
+        try {
+            const user = await this.userService.findUserByEmail(payload?.email);
+            if (user) {
+                const isCodeValid = this.isMFACodeValid(payload?.otp, user);
+                if (isCodeValid) {
+                    return {
+                        message: OTP_VERIFY_SUCCESSFULLY,
+                        success: true,
+                    };
+                }
+                return {
+                    message: WRONG_OR_EXPIRED_OTP,
+                    success: false,
+                };
+            }
+        } catch (error) {
+            throw error.message;
+        }
     }
 
     /**
