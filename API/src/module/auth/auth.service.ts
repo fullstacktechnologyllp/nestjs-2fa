@@ -3,13 +3,13 @@ import { JwtService } from '@nestjs/jwt';
 import { authenticator } from 'otplib';
 import { User } from '../user/user.model';
 import { toDataURL } from 'qrcode';
-import { MailService } from 'src/services/mail.service';
 import { UserService } from '../user/user.service';
 import {
+    AuthenticateType,
     EMAIL_ALREADY_EXISTS,
-    ENABLE_MFA_FOR_PASSWORD,
     INVALID_CREDENTIALS,
     LOGIN_SUCCESSFULLY,
+    OTP_SENT_TO_EMAIL,
     OTP_VERIFY_SUCCESSFULLY,
     PASSWORD_UPDATED_SUCCESSFULLY,
     QR_CODE_GENERATED_SUCCESSFULLY,
@@ -23,7 +23,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-    constructor(private jwtService: JwtService, private userService: UserService, private mailService: MailService) {}
+    constructor(private jwtService: JwtService, private userService: UserService) {}
 
     /**
      * for creating new token from user details
@@ -136,10 +136,16 @@ export class AuthService {
                     },
                 };
             }
-            return {
-                message: ENABLE_MFA_FOR_PASSWORD,
-                success: false,
-            };
+            const { otp } = await this.userService.createOTP(user?.email, user?.id);
+            if (otp) {
+                return {
+                    message: OTP_SENT_TO_EMAIL,
+                    success: true,
+                    userData: {
+                        mfaEnable: user.mfaEnable,
+                    },
+                };
+            }
         }
         return {
             message: USER_NOT_FOUND_FOR_EMAIL,
@@ -293,17 +299,31 @@ export class AuthService {
         try {
             const user = await this.userService.findUserByEmail(payload?.email);
             if (user) {
-                const isCodeValid = this.isMFACodeValid(payload?.otp, user);
-                if (isCodeValid) {
+                if (payload?.type === AuthenticateType.APP) {
+                    const isCodeValid = this.isMFACodeValid(payload?.otp, user);
+                    if (isCodeValid) {
+                        return {
+                            message: OTP_VERIFY_SUCCESSFULLY,
+                            success: true,
+                        };
+                    }
                     return {
-                        message: OTP_VERIFY_SUCCESSFULLY,
-                        success: true,
+                        message: WRONG_OR_EXPIRED_OTP,
+                        success: false,
+                    };
+                } else {
+                    const isCodeValid = await this.isEmailCodeValied(payload?.otp, user);
+                    if (isCodeValid) {
+                        return {
+                            message: OTP_VERIFY_SUCCESSFULLY,
+                            success: true,
+                        };
+                    }
+                    return {
+                        message: WRONG_OR_EXPIRED_OTP,
+                        success: false,
                     };
                 }
-                return {
-                    message: WRONG_OR_EXPIRED_OTP,
-                    success: false,
-                };
             }
         } catch (error) {
             throw error.message;
@@ -316,5 +336,23 @@ export class AuthService {
      */
     isMFACodeValid(mfaOTP: string, user: User) {
         return authenticator.verify({ token: mfaOTP, secret: user.mfaSecret });
+    }
+
+    /**
+     * For validation user otp from email
+     * @param emailOTP
+     * @param user
+     * @returns boolian
+     */
+    async isEmailCodeValied(emailOTP: number, user: User) {
+        const userOtp: any = await this.userService.getOtp(user?.id);
+        const currentTime = new Date().getTime();
+
+        // Compare the current time with the expiration time
+        if (emailOTP == userOtp?.otp && currentTime < userOtp?.expirationTime) {
+            return true;
+        }
+        // OTP is expired
+        return false;
     }
 }

@@ -2,6 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { ROUTES } from 'src/app/Constants/constants';
 import { ApiService } from 'src/app/Services/api/api.service';
 import { LoaderService } from 'src/app/Services/loader/loader.service';
 import { ToastService } from 'src/app/Services/toast/toast.service';
@@ -41,7 +42,7 @@ export class ResetPasswordComponent implements OnDestroy {
                 this.loader.stop();
                 if (resetPasswordResponse?.success) {
                     this.toast.success(resetPasswordResponse?.message);
-                    this.router.navigate(['/profile']);
+                    this.router.navigate([ROUTES.PROFILE]);
                     return;
                 } else {
                     this.toast.error(resetPasswordResponse?.message);

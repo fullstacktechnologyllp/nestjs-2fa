@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { ROUTES } from 'src/app/Constants/constants';
 import { ApiService } from 'src/app/Services/api/api.service';
 import { LoaderService } from 'src/app/Services/loader/loader.service';
 import { LocalstorageService } from 'src/app/Services/localstorage/localstorage.service';
@@ -64,12 +65,12 @@ export class ProfileComponent implements OnInit, OnDestroy {
     logout() {
         this.loader.start();
         this.localStorageService.removeItem('token');
-        this.router.navigate(['/auth/login']);
+        this.router.navigate([ROUTES.LOGIN]);
         this.loader.stop();
     }
 
     resetPassword(email: string) {
-        this.router.navigate(['/auth/reset-password'], {
+        this.router.navigate([ROUTES.RESET_PASSWORD], {
             state: { email: email },
         });
     }
@@ -91,7 +92,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 this.loader.stop();
                 if (updateUserRespone?.success) {
                     if (!this.MfaEnableBefore && this.profileForm.value.mfaEnable) {
-                        this.router.navigate(['/auth/setup-mfa']);
+                        this.router.navigate([ROUTES.SETUP_MFA]);
                         return;
                     }
                     this.getUserProfile();

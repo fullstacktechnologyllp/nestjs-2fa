@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { ROUTES } from 'src/app/Constants/constants';
 import { ApiService } from 'src/app/Services/api/api.service';
 import { LoaderService } from 'src/app/Services/loader/loader.service';
 import { ToastService } from 'src/app/Services/toast/toast.service';
@@ -53,7 +54,7 @@ export class SetupMfaComponent implements OnInit, OnDestroy {
                 if (activateMFAResponse?.success) {
                     // this.localStorageService.setItem("token", activateMFA.userData.token);
                     this.toast.success(activateMFAResponse?.message);
-                    this.router.navigate(['/profile']);
+                    this.router.navigate([ROUTES.PROFILE]);
                     return;
                 }
                 this.toast.error(activateMFAResponse?.message);

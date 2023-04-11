@@ -8,7 +8,6 @@ import { configuration } from './config/configuration';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeOptions } from 'sequelize-typescript';
-import { OtpModule } from './module/otp/otp.module';
 
 @Module({
     imports: [
@@ -48,7 +47,6 @@ import { OtpModule } from './module/otp/otp.module';
             },
             inject: [ConfigService],
         }),
-        OtpModule,
     ],
     controllers: [AppController],
     providers: [AppService],

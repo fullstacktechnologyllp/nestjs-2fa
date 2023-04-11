@@ -1,6 +1,7 @@
 <div>
     <h2 id="title" class="title fw-semibold">Multi Factor Authentication</h2>
-    <p class="sub-title fs-5 lh-base">Please enter the OTP from your Authentication app for <strong>{{currentEmail}}</strong></p>
+    <p *ngIf="otpType === 'Email'; else elseBlock" class="sub-title fs-5 lh-base">Please check your email and enter the OTP for <strong>{{currentEmail}}</strong></p>
+    <ng-template #elseBlock><p class="sub-title fs-5 lh-base">Please enter the OTP from your Authentication app for <strong>{{currentEmail}}</strong></p></ng-template>
     <form (ngSubmit)="mfaVerification()" [formGroup]="otpForm" aria-labelledby="title">
         <div class="form-control-group">
             <label class="label" for="input-otp">OTP</label>

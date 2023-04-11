@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { API_ROUTES } from 'src/app/Constants/constants';
 import {
     ForgotPasswordResponse,
     LoginFormData,
@@ -20,42 +21,42 @@ export class ApiService {
     constructor(private http: HttpClient, private toast: ToastService) {}
 
     signUp(payload: SignUpFormData) {
-        return this.http.post<SignUpResponseData>(`${this.baseUrl}/auth/signup`, payload);
+        return this.http.post<SignUpResponseData>(`${this.baseUrl}${API_ROUTES.SIGNUP}`, payload);
     }
 
     login(payload: LoginFormData) {
-        return this.http.post<LoginResponseData>(`${this.baseUrl}/auth/login`, payload);
+        return this.http.post<LoginResponseData>(`${this.baseUrl}${API_ROUTES.LOGIN}`, payload);
     }
 
     forgotPassword(payload: { email: string }) {
-        return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/auth/forgot-password`, payload);
+        return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}${API_ROUTES.FORGOT_PASSWORD}`, payload);
     }
 
     createPassword(payload: { email: string; newPassword: string }) {
-        return this.http.post<Message>(`${this.baseUrl}/auth/create-password`, payload);
+        return this.http.post<Message>(`${this.baseUrl}${API_ROUTES.CREATE_PASSWORD}`, payload);
     }
 
     resetPassword(payload: { password: string; newPassword: string }) {
-        return this.http.post<Message>(`${this.baseUrl}/auth/reset-password`, payload);
+        return this.http.post<Message>(`${this.baseUrl}${API_ROUTES.RESET_PASSWORD}`, payload);
     }
 
     getUserDetails() {
-        return this.http.get<User>(`${this.baseUrl}/user`);
+        return this.http.get<User>(`${this.baseUrl}${API_ROUTES.USER}`);
     }
 
     updateProfile(payload: object) {
-        return this.http.patch<Message>(`${this.baseUrl}/user`, payload);
+        return this.http.patch<Message>(`${this.baseUrl}${API_ROUTES.USER}`, payload);
     }
 
     generateQRCode() {
-        return this.http.get<QRCodeResponse>(`${this.baseUrl}/auth/generate-qrcode`);
+        return this.http.get<QRCodeResponse>(`${this.baseUrl}${API_ROUTES.GENERATE_QRCODE}`);
     }
 
     activateMFA(payload: { otp: string }) {
-        return this.http.post<LoginResponseData>(`${this.baseUrl}/auth/activate-mfa`, payload);
+        return this.http.post<LoginResponseData>(`${this.baseUrl}${API_ROUTES.ACTIVATE_MFA}`, payload);
     }
 
     otpVerification(payload: { otp: string; email: string }) {
-        return this.http.post<Message>(`${this.baseUrl}/auth/mfa`, payload);
+        return this.http.post<Message>(`${this.baseUrl}${API_ROUTES.MFA}`, payload);
     }
 }

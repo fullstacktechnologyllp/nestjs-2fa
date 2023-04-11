@@ -2,6 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { AuthenticateType, ROUTES } from 'src/app/Constants/constants';
 import { ApiService } from 'src/app/Services/api/api.service';
 import { LoaderService } from 'src/app/Services/loader/loader.service';
 import { LocalstorageService } from 'src/app/Services/localstorage/localstorage.service';
@@ -38,15 +39,16 @@ export class LoginComponent implements OnDestroy {
                 if (loginResponse?.success) {
                     this.localStorageService.setItem('token', loginResponse?.userData?.token);
                     if (loginResponse?.userData?.mfaEnable) {
-                        this.router.navigate(['/auth/mfa-verification'], {
+                        this.router.navigate([ROUTES.MFA_VERIFICATION], {
                             state: {
                                 email: this.loginForm.value.email,
-                                redirection: '/profile',
+                                redirection: ROUTES.PROFILE,
+                                type: AuthenticateType.APP,
                             },
                         });
                         return;
                     } else {
-                        this.router.navigate(['/auth/setup-mfa']);
+                        this.router.navigate([ROUTES.SETUP_MFA]);
                     }
                     return;
                 }

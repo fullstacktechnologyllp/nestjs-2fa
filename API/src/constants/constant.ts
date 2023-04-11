@@ -14,3 +14,9 @@ export const WRONG_OLD_PASSWORD = 'Old Password is Wrong!!';
 export const QR_CODE_GENERATED_SUCCESSFULLY = 'QR code has been generated successfully!!';
 export const WRONG_OR_EXPIRED_OTP = 'Wrong or Expired OTP, Please try again.';
 export const OTP_VERIFY_SUCCESSFULLY = 'OTP has been verify successfully!!';
+export const OTP_SENT_TO_EMAIL = 'OTP has been sent to your Email!!';
+
+export enum AuthenticateType {
+    EMAIL = 'Email',
+    APP = '2FA-App',
+}

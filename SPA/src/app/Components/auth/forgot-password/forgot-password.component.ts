@@ -2,6 +2,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { AuthenticateType, ROUTES } from 'src/app/Constants/constants';
 import { ApiService } from 'src/app/Services/api/api.service';
 import { LoaderService } from 'src/app/Services/loader/loader.service';
 import { ToastService } from 'src/app/Services/toast/toast.service';
@@ -34,10 +35,11 @@ export class ForgotPasswordComponent implements OnDestroy {
                 this.loader.stop();
                 if (forgotPasswordResponse?.success) {
                     this.toast.success('Please authenticate for Reset Password');
-                    this.router.navigate(['/auth/mfa-verification'], {
+                    this.router.navigate([ROUTES.MFA_VERIFICATION], {
                         state: {
                             email: this.emailForm.value.email,
-                            redirection: '/auth/create-password',
+                            redirection: ROUTES.CREATE_PASSWORD,
+                            type: forgotPasswordResponse?.userData?.mfaEnable ? AuthenticateType.APP : AuthenticateType.EMAIL,
                         },
                     });
                     return;

@@ -14,6 +14,7 @@ import { ToastService } from 'src/app/Services/toast/toast.service';
 export class MfaVerificationComponent implements OnDestroy {
     otpForm: FormGroup;
     currentEmail: string = history.state?.email;
+    otpType: string = history.state?.type;
     mfaSubscription: Subscription | undefined;
 
     constructor(
@@ -34,6 +35,7 @@ export class MfaVerificationComponent implements OnDestroy {
             const payload = {
                 otp: this.otpForm.controls['otp'].value,
                 email: history?.state?.email,
+                type: history?.state?.type,
             };
             this.mfaSubscription = this.apiService.otpVerification(payload)?.subscribe(
                 (otpVerification) => {
